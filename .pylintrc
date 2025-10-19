@@ -1,0 +1,11 @@
+[MASTER]
+# Use the virtual environment's Python interpreter (cross-platform)
+init-hook='import sys; import os; import platform; venv_dir = "Lib" if platform.system() == "Windows" else "lib"; venv_path = os.path.join(os.getcwd(), ".venv", venv_dir, "site-packages"); sys.path.insert(0, venv_path)'
+
+[MESSAGES CONTROL]
+# Only disable import-outside-toplevel (which is actually good practice for optional deps)
+disable=import-outside-toplevel
+
+[FORMAT]
+# Allow longer lines for better readability
+max-line-length=100
