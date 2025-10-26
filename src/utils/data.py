@@ -53,15 +53,6 @@ def load_peptides_func_dataset(root="./data"):
     return dataset, split_idx
 
 
-def load_peptides_struct_dataset(root="./data"):
-    """Load Peptides-struct dataset from LRGB (Long Range Graph Benchmark)"""
-    from torch_geometric.datasets import LRGBDataset
-
-    dataset = LRGBDataset(name="peptides-struct", root=root)
-    split_idx = create_train_val_test_split(dataset)
-    return dataset, split_idx
-
-
 def load_zinc_dataset(root="./data"):
     """Load ZINC dataset with custom splits"""
     from torch_geometric.datasets import ZINC
