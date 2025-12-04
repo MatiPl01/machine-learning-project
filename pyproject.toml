@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "graph-transformers"
+version = "0.1.0"
+description = "Graph Transformers at Scale: Global, Sparse and Hybrid Attention"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+torch = ">=2.0.0"
+torch-geometric = ">=2.4.0"
+ogb = ">=1.3.6"
+numpy = ">=1.24.0"
+matplotlib = ">=3.7.0"
+jupyter = ">=1.0.0"
+notebook = ">=6.4.0"
+
+[tool.poetry.group.dev.dependencies]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+

@@ -28,6 +28,9 @@ ENV/
 env/
 .env
 
+# Poetry
+.poetry/
+
 # Jupyter Notebook
 .ipynb_checkpoints
 
@@ -35,7 +38,6 @@ env/
 *.pth
 *.pt
 checkpoints/
-models/
 
 # Data
 data/

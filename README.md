@@ -15,37 +15,50 @@ This project implements and analyzes scalable graph transformers focusing on thr
 │   └── utils/                   # Utility functions
 │       └── data.py              # Data loading and analysis
 ├── main.ipynb                   # Main notebook with analysis
-├── requirements.txt             # Dependencies
+├── pyproject.toml               # Poetry dependencies and project config
+├── poetry.lock                  # Poetry lock file (generated)
 └── README.md                    # This file
 ```
 
 ## Setup (Cross-Platform)
 
-### 1. Create Virtual Environment
+### Prerequisites
+
+- Python 3.8+ (any installation method: system Python, pyenv, etc.)
+- Poetry (install from [poetry.pypa.io](https://python-poetry.org/docs/#installation))
+
+### 1. Install Poetry
 
 ```bash
-# Windows
-python -m venv .venv
-.venv\Scripts\activate
+# Windows (PowerShell)
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
 
 # macOS/Linux
-python -m venv .venv
-source .venv/bin/activate
+curl -sSL https://install.python-poetry.org | python3 -
 ```
 
-> [!NOTE]  
-> VS Code will automatically detect the correct Python interpreter in the virtual environment.
+Add Poetry to your PATH (see Poetry installation instructions for your OS).
 
 ### 2. Install Dependencies
 
+Poetry will automatically create a virtual environment and install all dependencies:
+
 ```bash
-pip install -r requirements.txt
+poetry install
 ```
+
+> [!NOTE]  
+> VS Code will automatically detect the Poetry virtual environment. You can also find it with `poetry env info --path`.
 
 ### 3. Run Jupyter Notebook
 
 ```bash
+# Activate the Poetry shell (optional, Poetry can run commands directly)
+poetry shell
 jupyter notebook main.ipynb
+
+# Or run directly without activating shell
+poetry run jupyter notebook main.ipynb
 ```
 
 ## References
