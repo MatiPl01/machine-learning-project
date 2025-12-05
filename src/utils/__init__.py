@@ -5,6 +5,8 @@ This package contains:
 - data: Data loading and analysis utilities
 - analysis: Visualization and analysis functions
 - constants: Configuration and constants
+- models: Model implementations (G2LFormer, GCN, GAT)
+- training: Training utilities and evaluation metrics
 """
 
 # Only import the main public API functions
