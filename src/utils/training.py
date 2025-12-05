@@ -74,8 +74,15 @@ def compute_metrics(y_pred, y_true, task_type="classification"):
     if task_type == "classification":
         # Binary classification
         if y_pred_np.shape[1] == 1:
-            # Sigmoid for binary
-            y_pred_proba = torch.sigmoid(torch.from_numpy(y_pred_np)).numpy()
+            # Check if predictions are already probabilities (in [0,1]) or logits
+            # If values are outside [0,1], they're logits and need sigmoid
+            if y_pred_np.min() < 0 or y_pred_np.max() > 1:
+                # Logits - apply sigmoid
+                y_pred_proba = torch.sigmoid(torch.from_numpy(y_pred_np)).numpy()
+            else:
+                # Already probabilities
+                y_pred_proba = y_pred_np
+
             y_pred_binary = (y_pred_proba > 0.5).astype(int).flatten()
             y_true_binary = y_true_np.flatten()
 
@@ -209,6 +216,8 @@ def train_model(
     verbose=True,
     save_dir=None,
     model_name=None,
+    patience=10,
+    min_delta=0.0,
 ):
     """
     Train a model with limited epochs for initial results.
@@ -226,6 +235,8 @@ def train_model(
         verbose: Print progress
         save_dir: Directory to save model checkpoints (default: './checkpoints')
         model_name: Name for saved model files (default: model class name)
+        patience: Early stopping patience (epochs without improvement). 0 to disable.
+        min_delta: Minimum change to qualify as improvement
     """
     if max_epochs is not None:
         num_epochs = min(num_epochs, max_epochs)
@@ -243,10 +254,18 @@ def train_model(
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     if task_type == "classification":
-        if hasattr(model, "output_proj") and model.output_proj[-1].out_features == 1:
-            criterion = nn.BCEWithLogitsLoss()
+        # Check output dimension to determine loss function
+        dummy_batch = next(iter(train_loader))
+        with torch.no_grad():
+            dummy_out = model(
+                dummy_batch.x.to(device),
+                dummy_batch.edge_index.to(device),
+                dummy_batch.batch.to(device),
+            )
+        if dummy_out.size(1) == 1:
+            criterion = nn.BCEWithLogitsLoss()  # Binary classification with logits
         else:
-            criterion = nn.CrossEntropyLoss()
+            criterion = nn.CrossEntropyLoss()  # Multi-class
     else:
         criterion = nn.MSELoss()
 
@@ -258,11 +277,16 @@ def train_model(
 
     best_val_metric = float("-inf")
     best_model_state = None
+    best_epoch = 0
+    patience_counter = 0
+    early_stopped = False
 
     if verbose:
         print(f"\n{'='*60}")
         print(f"Training {model.__class__.__name__}")
         print(f"Task: {task_type}, Epochs: {num_epochs}, Device: {device}")
+        if patience > 0:
+            print(f"Early stopping: patience={patience}, min_delta={min_delta}")
         print(f"{'='*60}\n")
 
     for epoch in range(num_epochs):
@@ -297,9 +321,16 @@ def train_model(
             # For regression, lower is better, so negate
             val_metric = -val_metrics[metric_key]
 
-        if val_metric > best_val_metric:
+        # Check for improvement
+        improved = val_metric > (best_val_metric + min_delta)
+
+        if improved:
             best_val_metric = val_metric
             best_model_state = model.state_dict().copy()
+            best_epoch = epoch + 1
+            patience_counter = 0
+        else:
+            patience_counter += 1
 
         if verbose:
             print(f"Epoch {epoch+1}/{num_epochs} ({elapsed:.2f}s)")
@@ -312,7 +343,19 @@ def train_model(
             for k, v in val_metrics.items():
                 if k != "loss":
                     print(f"{k}: {v:.4f}", end=" ")
+            if improved:
+                print(" [best]", end="")
             print()
+
+        # Early stopping check
+        if patience > 0 and patience_counter >= patience:
+            early_stopped = True
+            if verbose:
+                print(f"\nEarly stopping triggered after {epoch+1} epochs")
+                print(
+                    f"No improvement for {patience} epochs (best at epoch {best_epoch})"
+                )
+            break
 
     # Get performance stats
     perf_stats = tracker.get_stats()
@@ -360,7 +403,10 @@ def train_model(
     if verbose:
         print(f"\n{'='*60}")
         print("Training Complete!")
-        print(f"Best Val Metric: {best_val_metric:.4f}")
+        print(f"Best Val Metric: {best_val_metric:.4f} (at epoch {best_epoch})")
+        print(f"Total Epochs: {epoch+1}/{num_epochs}")
+        if early_stopped:
+            print("Early stopping triggered")
         print(f"Avg Time/Epoch: {perf_stats['avg_train_time']:.2f}s")
         print(f"Peak Memory: {perf_stats['peak_memory_gb']:.2f} GB")
         print(f"{'='*60}\n")
