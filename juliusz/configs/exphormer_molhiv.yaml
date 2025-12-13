@@ -1,0 +1,47 @@
+model:
+  model_type: exphormer
+  in_channels: 9
+  hidden_channels: 256
+  out_channels: 1
+  num_layers: 4
+  num_heads: 8
+  dropout: 0.1
+  pe_type: laplacian
+  pe_dim: 8
+  task_type: graph_classification
+  pooling_type: mean
+  num_virtual_nodes: 1
+  expander_degree: 4
+  expander_method: random
+training:
+  dataset_name: ogbg-molhiv
+  data_root: ./data
+  batch_size: 32
+  num_epochs: 100
+  learning_rate: 0.0001
+  weight_decay: 1.0e-05
+  optimizer: adam
+  scheduler: cosine
+  warmup_epochs: 5
+  gradient_clip: 1.0
+  label_smoothing: 0.0
+  early_stop: true
+  patience: 20
+  min_delta: 0.0001
+  save_dir: ./checkpoints
+  save_best_only: true
+  log_dir: ./logs
+  log_every: 10
+  eval_metric: rocauc
+  eval_every: 1
+  seed: 42
+  device: cpu
+  num_workers: 0
+  track_complexity: true
+  profile_memory: true
+experiment_name: exphormer_molhiv
+description: Exphormer model on OGB-MolHIV dataset
+tags:
+- exphormer
+- molhiv
+- binary_classification
