@@ -7,20 +7,18 @@ Usage:
 """
 
 import sys
-sys.path.append('..')
-sys.path.append('.')
+import os
+
+# Add project root to path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import torch
 import argparse
 from pathlib import Path
 
-# Add project to path
-import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-
-from juliusz.models.goat import GOAT
-from juliusz.training import Trainer, ExperimentConfig
-from juliusz.utils.positional_encodings import precompute_positional_encodings
+from models.goat import GOAT
+from training import Trainer, ExperimentConfig
+from src.utils.positional_encodings import precompute_positional_encodings
 from src.utils.data import load_molhiv_dataset, load_zinc_dataset, load_peptides_func_dataset
 
 from torch_geometric.loader import DataLoader

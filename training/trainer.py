@@ -20,8 +20,8 @@ import json
 from pathlib import Path
 
 from .config import ExperimentConfig
-from ..utils.metrics import compute_metrics, MetricTracker
-from ..utils.complexity import ComplexityTracker
+from src.utils.metrics import compute_metrics, MetricTracker
+from src.utils.complexity import ComplexityTracker
 
 
 class Trainer:
