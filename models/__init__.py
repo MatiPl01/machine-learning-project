@@ -2,17 +2,39 @@
 Graph Transformer Models
 
 This package contains implementations of:
-- GOAT: Global attention transformer
+
+Graph Transformers:
+- GOAT: Global attention transformer with virtual nodes
 - Exphormer: Sparse transformer with expander graphs
-- GCN: Graph Convolutional Network (baseline)
-- GAT: Graph Attention Network (baseline)
+
+Baseline GNN Models:
+- GCN: Graph Convolutional Network (Kipf & Welling, 2017)
+- GAT: Graph Attention Network (Veličković et al., 2018)
+- GIN: Graph Isomorphism Network (Xu et al., 2019)
 - GraphMLP: Simple MLP baseline (no graph structure)
+
+Hybrid Models:
+- GCNVirtualNode: GCN with Virtual Node for global context
+- GINVirtualNode: GIN with Virtual Node (strongest hybrid)
 """
 
 from .goat import GOAT
 from .exphormer import Exphormer
-from .baselines import GCN, GAT, GraphMLP
+from .baselines import GCN, GAT, GIN, GraphMLP
+from .hybrid import GCNVirtualNode, GINVirtualNode
 
-__all__ = ["GOAT", "Exphormer", "GCN", "GAT", "GraphMLP"]
+__all__ = [
+    # Graph Transformers
+    "GOAT",
+    "Exphormer",
+    # Baseline GNNs
+    "GCN",
+    "GAT",
+    "GIN",
+    "GraphMLP",
+    # Hybrid Models
+    "GCNVirtualNode",
+    "GINVirtualNode",
+]
 
 

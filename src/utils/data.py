@@ -36,10 +36,52 @@ def create_train_val_test_split(dataset, train_ratio=0.8, val_ratio=0.1):
 
 
 def load_molhiv_dataset(root="./data"):
-    """Load ogbg-molhiv dataset with splits"""
+    """Load ogbg-molhiv dataset with splits
+    
+    Binary classification: predict whether molecule inhibits HIV replication
+    - 41,127 molecules
+    - Task: Binary classification
+    - Metric: ROC-AUC
+    """
     from ogb.graphproppred import PygGraphPropPredDataset
 
     dataset = PygGraphPropPredDataset(name="ogbg-molhiv", root=root)
+    split_idx = dataset.get_idx_split()
+    return dataset, split_idx
+
+
+def load_molpcba_dataset(root="./data"):
+    """Load ogbg-molpcba dataset with splits
+    
+    Multi-label classification: predict biological activities of molecules
+    - 437,929 molecules (larger than molhiv)
+    - 128 binary classification tasks
+    - Task: Multi-label binary classification
+    - Metric: Average Precision (AP)
+    
+    This is a more challenging and larger dataset from OGB.
+    """
+    from ogb.graphproppred import PygGraphPropPredDataset
+
+    dataset = PygGraphPropPredDataset(name="ogbg-molpcba", root=root)
+    split_idx = dataset.get_idx_split()
+    return dataset, split_idx
+
+
+def load_ppa_dataset(root="./data"):
+    """Load ogbg-ppa dataset with splits
+    
+    Multi-class classification: predict protein function from protein-protein association
+    - 158,100 graphs (protein associations)
+    - 37 classes
+    - Task: Multi-class classification
+    - Metric: Accuracy
+    
+    Graphs are larger on average than molecular datasets.
+    """
+    from ogb.graphproppred import PygGraphPropPredDataset
+
+    dataset = PygGraphPropPredDataset(name="ogbg-ppa", root=root)
     split_idx = dataset.get_idx_split()
     return dataset, split_idx
 

@@ -1,0 +1,42 @@
+model:
+  model_type: gcn_virtualnode
+  in_channels: 28
+  hidden_channels: 128
+  out_channels: 1
+  num_layers: 5
+  dropout: 0.1
+  task_type: graph_classification
+  pooling_type: mean
+training:
+  dataset_name: zinc
+  data_root: ./data
+  batch_size: 64
+  num_epochs: 200
+  learning_rate: 0.001
+  weight_decay: 1.0e-05
+  optimizer: adam
+  scheduler: cosine
+  warmup_epochs: 5
+  gradient_clip: 1.0
+  label_smoothing: 0.0
+  early_stop: true
+  patience: 20
+  min_delta: 0.0001
+  save_dir: ./checkpoints
+  save_best_only: true
+  log_dir: ./logs
+  log_every: 10
+  eval_metric: mae
+  eval_every: 1
+  seed: 42
+  device: cpu
+  num_workers: 0
+  track_complexity: true
+  profile_memory: true
+experiment_name: gcn_virtualnode_zinc
+description: GCN with Virtual Node (hybrid model) on ZINC dataset
+tags:
+- gcn_virtualnode
+- hybrid
+- zinc
+- regression
