@@ -13,6 +13,8 @@ This package contains:
 # Only import the main public API functions
 from .data import (
     load_molhiv_dataset,
+    load_molpcba_dataset,
+    load_ppa_dataset,
     load_peptides_func_dataset,
     load_zinc_dataset,
     print_dataset_summary,
@@ -47,8 +49,10 @@ from .positional_encodings import (
 )
 
 __all__ = [
-    # Main data loading functions
+    # Main data loading functions (OGB + PyG datasets)
     "load_molhiv_dataset",
+    "load_molpcba_dataset",
+    "load_ppa_dataset",
     "load_peptides_func_dataset",
     "load_zinc_dataset",
     "print_dataset_summary",
