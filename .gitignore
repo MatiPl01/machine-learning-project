@@ -56,10 +56,15 @@ wandb/
 .idea/
 *.swp
 *.swo
+*.sublime-*
+.vscode/
+*.code-workspace
 
 # OS
 .DS_Store
 Thumbs.db
+*.tmp
+*~
 
 # Results
 results/
@@ -79,3 +84,27 @@ ABALATION_STUDIES.md
 SCALABILITY_ANALYSIS.md
 VISUALIZATION.md
 ROADMAP.md
+
+# LaTeX
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+article/*.aux
+article/*.log
+article/*.out
+article/*.toc
+article/*.synctex.gz
+article/*.fdb_latexmk
+article/*.fls
+article/*.bbl
+article/*.blg
+article/*.bcf
+article/*.run.xml
