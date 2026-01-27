@@ -105,14 +105,29 @@ We conducted a comprehensive benchmark comparing:
 
 We tested everything on the \textbf{ZINC dataset}\ndash a well-established benchmark for molecular property prediction with 12,000 molecular graphs. The task: predict molecular solubility (a real-world problem in drug discovery).
 
-To ensure fair comparison, all models used the same hyperparameters:
+To ensure fair comparison, most hyperparameters were shared across all models:
 \begin{itemize}
     \item Hidden dimension: 256
     \item 5 layers
-    \item 8 attention heads (for transformer models)
+    \item 8 attention heads (for transformer and attention-based models)
+    \item Dropout: 0.1
+    \item Positional encoding dimension: 16 (Laplacian eigenvectors)
     \item Batch size: 64
-    \item Early stopping with patience of 20 epochs
+    \item Weight decay: 1e-5
+    \item Early stopping: patience of 20 epochs, min\_delta of 1e-4
+    \item Maximum epochs: 200
 \end{itemize}
+
+However, we used model-specific learning rates and warmup schedules, as different architectures benefit from different training dynamics:
+\begin{itemize}
+    \item \textbf{Base learning rate}: 1e-4 (used for GCN, GAT, GraphMLP)
+    \item \textbf{GOAT}: 5e-4 (5x multiplier for better convergence)
+    \item \textbf{Exphormer}: 3e-4 (3x multiplier for stability)
+    \item \textbf{GIN, GIN+VN, GCN+VN}: 1e-3 (10x multiplier, as GNN-based models typically need higher learning rates)
+    \item \textbf{Warmup}: 5 epochs for transformers (GOAT, Exphormer), none for GNN-based models
+\end{itemize}
+
+All models used cosine annealing learning rate schedules, with warmup applied only to transformer models.
 
 We measured everything: accuracy, training time, memory usage, and parameter counts. The goal was to understand not just which model performs best, but which offers the best \textit{tradeoff}.
 
