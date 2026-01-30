@@ -21,19 +21,21 @@ We compare:
 
 All models are trained and evaluated on the **same datasets and hyperparameter regime**:
 
-| Parametr | CPU version | GPU version |
-|----------|-------------|-------------|
+| Parameter | CPU version | GPU version |
+|-----------|-------------|-------------|
 | **hidden_dim** | 64          | 256         |
 | **num_layers** | 3           | 5           |
 | **num_heads** | 4           | 8           |
 | **dropout** | 0.1         | 0.1         |
 | **learning_rate** | 1e-3        | 1e-4        |
-| **batch_size** | 32          | 64          |
+| **batch_size** | 32          | 64*         |
 | **num_epochs** | 10          | 200         |
 | **pe_dim** (positional enc.) | 8           | 16          |
 | **early_stopping patience** | 5           | 20          |
 
- so that differences in performance reflect architecture rather than tuning.
+\* For ogbg-molpcba (large dataset with ~438K graphs), batch_size is increased to 128 for efficiency.
+
+All models use the same hyperparameter regime so that differences in performance reflect architecture rather than tuning.
 
 **References:**
 
@@ -73,77 +75,92 @@ Data loading: `src/utils/data.py`.
 
 ## 4. Experimental Setup
 
-- **Hardware:** GPU (e.g. NVIDIA RTX 3090) for full runs.
+- **Hardware:** NVIDIA RTX 3090 (24GB VRAM), AMD Ryzen 9 9950X3D, 96GB DDR5-6000 CL30
 - **Shared hyperparameters (GPU mode):** described in the chapter 1
 
 ## 5. Results Summary
 
 ### 5.1 ZINC (Regression — MAE ↓)
 
-| Rank | Model | Val MAE | Params |
-|------|-------|--------|--------|
-| 1 | **GIN+VN** | **0.355** | ~1.52M |
-| 2 | GIN | 0.368 | ~0.93M |
-| 3 | GCN+VN | 0.475 | ~0.93M |
-| 4 | GOAT | 0.530 | ~5.01M |
-| 5 | Exphormer | 0.651 | ~5.34M |
-| 6 | GAT | 0.693 | ~0.33M |
-| 7 | GCN | 0.829 | ~0.33M |
-| 8 | GraphMLP | 0.831 | ~0.26M |
+| Rank | Model | Val MAE | Params | Train Time |
+|------|-------|---------|--------|------------|
+| 1 | **GIN+VN** | **0.355** | ~1.52M | 560s |
+| 2 | GIN | 0.368 | ~0.93M | 340s |
+| 3 | GCN+VN | 0.475 | ~0.93M | 580s |
+| 4 | GOAT | 0.530 | ~5.01M | 5603s |
+| 5 | Exphormer | 0.651 | ~5.34M | 1334s |
+| 6 | GAT | 0.693 | ~0.33M | 163s |
+| 7 | GCN | 0.829 | ~0.33M | 151s |
+| 8 | GraphMLP | 0.831 | ~0.26M | 118s |
 
-![img.png](img.png)
-![img_1.png](img_1.png)
+![img.png](images/img.png)
+*Left: Model comparison bar chart showing validation MAE (lower is better). Middle: Training time comparison — transformers (GOAT, Exphormer) take 3-10x longer despite worse results. Right: Parameters vs performance scatter plot — best models (GIN, GIN+VN) achieve lowest MAE with ~1M parameters, while transformers use ~5M.*
 
-**Takeaway:** GIN and GIN+VN clearly outperform the rest. Virtual Node helps (GCN+VN vs GCN). Transformers (GOAT, Exphormer) are worse than the best GNNs despite more parameters.
+![img_1.png](images/img_1.png)
+*Learning curves for all 8 models: train loss (blue) and validation MAE (red) over epochs. GIN and GIN+VN show stable convergence with lowest validation error. Transformers exhibit higher variance and slower convergence.*
+
+**Takeaway:** GIN and GIN+VN clearly outperform the rest. Virtual Node helps (GCN+VN vs GCN). Transformers (GOAT, Exphormer) are worse than the best GNNs despite more parameters and 3-10x longer training time.
 
 ---
 
 ### 5.2 ogbg-molhiv (Binary classification — ROC-AUC ↑)
 
-| Rank | Model | Val ROC-AUC | Params |
-|------|-------|-------------|--------|
-| 1 | **GIN** | **0.811** | ~0.93M |
-| 2 | GCN+VN | 0.804 | ~0.93M |
-| 3 | GAT | 0.801 | ~0.34M |
-| 4 | GCN | 0.791 | ~0.33M |
-| 5 | GIN+VN | 0.791 | ~1.52M |
-| 6 | GOAT | 0.676 | ~5.01M |
-| 7 | Exphormer | 0.662 | ~5.34M |
-| 8 | GraphMLP | 0.636 | ~0.27M |
+| Rank | Model | Val ROC-AUC | Params | Train Time |
+|------|-------|-------------|--------|------------|
+| 1 | **GIN** | **0.811** | ~0.93M | 450s |
+| 2 | GCN+VN | 0.804 | ~0.93M | 656s |
+| 3 | GAT | 0.801 | ~0.34M | 307s |
+| 4 | GCN | 0.791 | ~0.33M | 267s |
+| 5 | GIN+VN | 0.791 | ~1.52M | 795s |
+| 6 | GOAT | 0.676 | ~5.01M | 4720s |
+| 7 | Exphormer | 0.662 | ~5.34M | 2166s |
+| 8 | GraphMLP | 0.636 | ~0.27M | 67s |
 
-![img_2.png](img_2.png)
-![img_3.png](img_3.png)
+![img_2.png](images/img_2.png)
+*Left: Model comparison bar chart showing validation ROC-AUC (higher is better). GIN leads with 0.811, followed closely by GCN+VN (0.804) and GAT (0.801). Transformers score significantly lower (0.676, 0.662). Middle: Training time — GOAT takes ~10x longer than best GNNs. Right: Parameters vs performance — top GNNs achieve best scores with ~0.3-1M parameters.*
 
-**Takeaway:** Best results are from GIN and GCN+VN. GAT and GCN are close. Transformers (GOAT, Exphormer) lag behind the top GNNs. Virtual Node helps GCN (GCN+VN > GCN) but not clearly GIN on this dataset.
+![img_3.png](images/img_3.png)
+*Learning curves showing train loss (blue) and validation ROC-AUC (red) over epochs. GIN, GCN+VN, and GAT show stable convergence to high scores. Transformers plateau at lower performance levels.*
+
+**Takeaway:** Best results are from GIN and GCN+VN. GAT and GCN are close. Transformers (GOAT, Exphormer) lag behind the top GNNs by ~0.13-0.15 ROC-AUC despite using 5x more parameters. Virtual Node helps GCN (GCN+VN > GCN) but not clearly GIN on this dataset.
 
 ---
 
 ### 5.3 ogbg-molpcba (Multi-label — AP ↑)
 
-| Rank | Model | Val AP | Params |
-|------|-------|--------|--------|
-| 1 | **GIN** | **0.484** | ~0.96M |
-| 2 | GCN | 0.478 | ~0.37M |
-| 3 | GAT | 0.429 | ~0.37M |
-| 4 | Exphormer | 0.427 | ~5.37M |
-| 5 | GOAT | 0.418 | ~5.04M |
-| 6 | GCN+VN | 0.340 | ~0.96M |
-| 7 | GIN+VN | 0.328 | ~1.56M |
-| 8 | GraphMLP | 0.251 | ~0.30M |
+| Rank | Model | Val AP | Params | Train Time |
+|------|-------|--------|--------|------------|
+| 1 | **GIN** | **0.484** | ~0.96M | N/A* |
+| 2 | GCN | 0.478 | ~0.37M | N/A* |
+| 3 | GAT | 0.429 | ~0.37M | N/A* |
+| 4 | Exphormer | 0.427 | ~5.37M | N/A* |
+| 5 | GOAT | 0.418 | ~5.04M | N/A* |
+| 6 | GCN+VN | 0.340 | ~0.96M | N/A* |
+| 7 | GIN+VN | 0.328 | ~1.56M | N/A* |
+| 8 | GraphMLP | 0.251 | ~0.30M | N/A* |
 
-![img_4.png](img_4.png)
-![img_5.png](img_5.png)
+\* Training times not available — models were loaded from checkpoints after training crashes, and checkpoint format didn't preserve training time metadata.
 
-**Takeaway:** GIN and GCN are best; GAT and both transformers are mid-pack. On this large multi-label dataset, Virtual Node variants (GCN+VN, GIN+VN) perform worse than their non-VN counterparts, suggesting possible overfitting or need for different hyperparameters.
+![img_4.png](images/img_4.png)
+*Left: Model comparison bar chart showing validation Average Precision (higher is better). GIN (0.484) and GCN (0.478) lead, while transformers are mid-pack (0.427, 0.418). Virtual Node variants show severe underperformance (0.340, 0.328). Middle: Training time plot — values are 0.0 as models were loaded from checkpoints without time metadata. Right: Parameters vs performance — best models use ~0.4-1M parameters, transformers use ~5M with worse results.*
+
+![img_5.png](images/img_5.png)
+*Learning curves for all models on the large molpcba dataset (~438K graphs). GIN and GCN show stable convergence to best scores. Virtual Node variants (GCN+VN, GIN+VN) exhibit poor performance, suggesting overfitting or suboptimal hyperparameters for this dataset size.*
+
+**Takeaway:** GIN and GCN are best; GAT and both transformers are mid-pack. On this large multi-label dataset, Virtual Node variants (GCN+VN, GIN+VN) perform significantly worse than their non-VN counterparts (0.14-0.16 AP lower), suggesting possible overfitting or need for different hyperparameters/regularization.
 
 ---
 
 ## 6. Conclusions
 
-1. **GIN is the strongest single architecture** across ZINC, molhiv, and molpcba — consistent with its higher expressive power (WL-1 style).
-2. **Virtual Node helps GCN** (ZINC, molhiv) by adding global context at low cost; effect on GIN is dataset-dependent (helps on ZINC, mixed on molhiv, hurts on molpcba in current setup).
-3. **Graph Transformers (GOAT, Exphormer) do not beat the best GNNs** here — they use more parameters and compute but achieve worse or similar validation metrics. Possible reasons: molecule graphs are small and local structure may be enough; our training/hyperparameters may favor GNNs; or the tasks do not require strong long-range reasoning.
-4. **GraphMLP is consistently worst**, showing that **using graph structure is essential**.
-5. **Efficiency:** Best validation scores often come from GIN or GCN+VN with ~1M parameters, while transformers use ~5M and train longer — so the best accuracy/compute trade-off in these experiments is with GNNs and hybrids.
+1. **GIN consistently performs best** — ranks 1st or 2nd on all three datasets (ZINC: 0.368, molhiv: 0.811, molpcba: 0.484). GIN+VN wins on ZINC (0.355) but underperforms plain GIN on molhiv (0.791 vs 0.811) and molpcba (0.328 vs 0.484).
 
-These results support the claim that **for these molecular/graph-level benchmarks, carefully chosen GNNs (and simple hybrids) can match or outperform graph transformers**, and that global attention is not always necessary for good performance.
+2. **Virtual Node effect is inconsistent** — helps GCN on ZINC (0.475 vs 0.829) and molhiv (0.804 vs 0.791), but hurts both GCN and GIN on molpcba (GCN+VN: 0.340 vs GCN: 0.478; GIN+VN: 0.328 vs GIN: 0.484). The large performance drop on molpcba suggests VN variants may overfit or need different regularization.
+
+3. **Transformers underperform despite more parameters** — GOAT and Exphormer use ~5M parameters (vs ~1M for best GNNs) but score worse: on ZINC they rank 4th-5th (0.530, 0.651 vs best 0.355), on molhiv they rank 6th-7th (0.676, 0.662 vs best 0.811), and on molpcba they're mid-pack (0.418, 0.427 vs best 0.484). Training time is also 3-10x longer.
+
+4. **GraphMLP confirms structure matters** — consistently worst (ZINC: 0.831, molhiv: 0.636, molpcba: 0.251), showing that ignoring graph structure severely limits performance.
+
+5. **Best efficiency: GIN or GCN** — top results come from models with ~0.3-1M parameters, while transformers use ~5M and train much slower. For these molecular tasks, simple GNNs offer better accuracy/compute trade-off than graph transformers.
+
+**Summary:** On these molecular benchmarks, well-tuned GNNs (especially GIN) outperform graph transformers while using fewer parameters and less compute. Global attention doesn't provide clear benefits here, possibly because molecular graphs are relatively small and local structure is sufficient for these tasks.
