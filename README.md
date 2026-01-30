@@ -21,17 +21,17 @@ We compare:
 
 All models are trained and evaluated on the **same datasets and hyperparameter regime**:
 
-| Parametr | Tryb CPU | Tryb GPU |
-|----------|----------|----------|
-| **hidden_dim** | 64 | 256 |
-| **num_layers** | 3 | 5 |
-| **num_heads** | 4 | 8 |
-| **dropout** | 0.1 | 0.1 |
-| **learning_rate** | 1e-3 | 1e-4 |
-| **batch_size** | 32 | 64 |
-| **num_epochs** | 10 | 200 |
-| **pe_dim** (positional enc.) | 8 | 16 |
-| **early_stopping patience** | 5 | 20 |
+| Parametr | CPU version | GPU version |
+|----------|-------------|-------------|
+| **hidden_dim** | 64          | 256         |
+| **num_layers** | 3           | 5           |
+| **num_heads** | 4           | 8           |
+| **dropout** | 0.1         | 0.1         |
+| **learning_rate** | 1e-3        | 1e-4        |
+| **batch_size** | 32          | 64          |
+| **num_epochs** | 10          | 200         |
+| **pe_dim** (positional enc.) | 8           | 16          |
+| **early_stopping patience** | 5           | 20          |
 
  so that differences in performance reflect architecture rather than tuning.
 
@@ -74,16 +74,7 @@ Data loading: `src/utils/data.py`.
 ## 4. Experimental Setup
 
 - **Hardware:** GPU (e.g. NVIDIA RTX 3090) for full runs.
-- **Shared hyperparameters (GPU mode):** `hidden_dim=256`, `num_layers=5`, `num_heads=8`, `dropout=0.1`, `pe_dim=16` (for transformers), early stopping (patience 20), model-specific learning rates (e.g. higher for GIN, GOAT, Exphormer).
-- **Reproducibility:** Experiments are run in Jupyter notebooks; results and checkpoints are saved under `experiments/` and `checkpoints/`.
-
-Notebooks:
-
-- `experiments/compare_all_models zinc.ipynb`
-- `experiments/compare_all_models molhiv.ipynb`
-- `experiments/compare_all_models molpcba.ipynb`
-
----
+- **Shared hyperparameters (GPU mode):** described in the chapter 1
 
 ## 5. Results Summary
 
