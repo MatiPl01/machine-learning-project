@@ -2,7 +2,7 @@ model:
   model_type: goat
   in_channels: 9
   hidden_channels: 256
-  out_channels: 128  # 128 binary classification tasks
+  out_channels: 128 
   num_layers: 4
   num_heads: 8
   dropout: 0.1
@@ -30,7 +30,7 @@ training:
   save_best_only: true
   log_dir: ./logs
   log_every: 10
-  eval_metric: ap  # Average Precision for multi-label
+  eval_metric: ap 
   eval_every: 1
   seed: 42
   device: cuda

@@ -7,7 +7,7 @@ model:
   dropout: 0.1
   train_eps: true
   task_type: graph_classification
-  pooling_type: add  # GIN paper recommends SUM pooling
+  pooling_type: add 
 training:
   dataset_name: zinc
   data_root: ./data
