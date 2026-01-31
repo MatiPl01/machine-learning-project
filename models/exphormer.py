@@ -86,9 +86,9 @@ class ExpanderGraphBuilder:
                 if neighbor != node:  # No self-loops
                     edges.append([node, neighbor.item()])
         
-        edge_index = torch.tensor(edges, device=device).t()
+        edge_index = torch.tensor(edges, dtype=torch.long, device=device).t()
         return edge_index
-    
+
     @staticmethod
     def _circulant_expander(
         num_nodes: int,
@@ -115,7 +115,7 @@ class ExpanderGraphBuilder:
                 neighbor = (node + offset) % num_nodes
                 edges.append([node, neighbor])
         
-        edge_index = torch.tensor(edges, device=device).t()
+        edge_index = torch.tensor(edges, dtype=torch.long, device=device).t()
         return edge_index
 
 
@@ -371,14 +371,15 @@ class Exphormer(BaseGraphTransformer):
         
         for i in range(batch_size):
             # Get nodes for this graph
-            mask = batch == i
-            node_indices = torch.where(mask)[0]
+            mask = (batch == i)
+            node_indices = torch.where(mask)[0].long().to(device)
             num_nodes = node_indices.size(0)
             
-            # Get expander edges (indices within subgraph)
+            # Get expander edges (indices within subgraph) [2, num_edges]; must be long for indexing
             expander_edges = self._get_expander_edges(num_nodes, device)
+            expander_edges = expander_edges.long().to(device)
             
-            # Remap to global indices
+            # Remap to global indices: index each row so node_indices[expander_edges] stays (2, E)
             global_expander_edges = node_indices[expander_edges]
             
             all_expander_edges.append(global_expander_edges)
